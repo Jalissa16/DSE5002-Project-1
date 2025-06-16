@@ -1,0 +1,155 @@
+---
+title: "Midterm Project"
+author: "Jalissa Horinek"
+date: "2025-06-15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{R}
+library(tidyverse)
+library(ggplot2)
+library(scales)
+```
+
+
+```{R}
+df = read.csv("r project data.csv")
+```
+
+```{R}
+str(df)
+summary(df)
+```
+
+```{R}
+df$experience_level = factor(df$experience_level, levels = c("EN", "MI", "SE", "EX"))
+df$employment_type = factor(df$employment_type)
+df$company_size = factor(df$company_size, levels = c("S", "M", "L"))
+df$remote_ratio = factor(df$remote_ratio, levels = c(0, 50, 100), labels = c("No Remote", "Partially Remote", "Fully Remote"))
+```
+
+```{R}
+ggplot(df, aes(x = experience_level, y = salary_in_usd, fill = experience_level)) + geom_boxplot() + scale_y_continuous(labels=comma) + labs(title = "Salary by Experience Level", y = "Salary (USD)", x = "Experience Level")
+
+ggsave("salary_by_experience.png", width = 8, height = 5)
+```
+
+```{R}
+salary_by_experience <- df %>%
+  group_by(experience_level) %>%
+  summarize(avg_salary = mean(salary_in_usd, na.rm = TRUE))
+
+ggplot(salary_by_experience, aes(x = experience_level, y = avg_salary, fill = experience_level)) +
+  geom_bar(stat = "identity", width = 0.6) +
+  scale_y_continuous(labels = comma) +
+  labs(title = "Average Salary by Experience Level",
+       x = "Experience Level",
+       y = "Average Salary (USD)")
+
+ggsave("Salary_by_experiencebar.png", width=8, height=5)
+```
+
+```{R}
+df %>% mutate(location=ifelse(employee_residence == "US", "United States", "Other")) %>% ggplot(aes(x=location, y=salary_in_usd, fill=location)) + geom_boxplot() + scale_y_continuous(labels=comma) + labs(title = "US vs Global Salaries", y = "Salary (USD)", x = "Location")
+
+ggsave("US_vs_Global_Salaries.png", width=8, height=5)
+```
+
+
+```{R}
+ggplot(df, aes(x=company_size, y=salary_in_usd, fill=company_size)) + geom_boxplot() + scale_y_continuous(labels=comma) + labs(title = "Salaries by Company Size", y="Salary(USD)", x="Company Size")
+
+ggsave("Company_Size.png", width=8, height=5)
+```
+
+```{R}
+salary_by_size <- df %>%
+  group_by(company_size) %>%
+  summarize(avg_salary = mean(salary_in_usd, na.rm = TRUE))
+
+ggplot(salary_by_size, aes(x = company_size, y = avg_salary, fill = company_size)) +
+  geom_bar(stat = "identity", width = 0.6) +
+  scale_y_continuous(labels = comma) +
+  labs(title = "Average Salary by Company Size",
+       x = "Company Size",
+       y = "Average Salary (USD)")
+
+ggsave("Company_Size.png", width=8, height=5)
+```
+
+```{R}
+ggplot(df, aes(x = remote_ratio, y = salary_in_usd, fill = remote_ratio)) + geom_boxplot() + scale_y_continuous(labels=comma) + labs(title = "Remote Work and Salary", y="Salary (USD)", x="Remote Work Level")
+
+ggsave("RemoteWork_Salary.png", width=8, height=5)
+```
+
+
+```{R}
+df %>% group_by(work_year) %>% summarize(avg_salary = mean(salary_in_usd)) %>% ggplot(aes(x=work_year, y=avg_salary)) + geom_line() + geom_point() + scale_y_continuous(labels=comma) + labs(title = "Average Salary Over Time", x="Year", y="Average Salary (USD)")
+
+ggsave("Average_Over_Time.png", width=8, height=5)
+```
+
+```{R}
+df %>%
+  group_by(experience_level) %>%
+  summarize(
+    avg_salary = mean(salary_in_usd, na.rm = TRUE),
+    p25 = quantile(salary_in_usd, 0.25, na.rm = TRUE),
+    p75 = quantile(salary_in_usd, 0.75, na.rm = TRUE),
+    max = max(salary_in_usd, na.rm = TRUE))
+```
+
+```{R}
+df %>%
+  filter(employee_residence == "US") %>%
+  group_by(experience_level) %>%
+  summarize(
+    avg_salary = mean(salary_in_usd, na.rm = TRUE),
+    p25 = quantile(salary_in_usd, 0.25, na.rm = TRUE),
+    p75 = quantile(salary_in_usd, 0.75, na.rm = TRUE))
+```
+
+
+```{R}
+df %>%
+  filter(employee_residence != "US") %>%
+  group_by(experience_level) %>%
+  summarize(
+    avg_salary = mean(salary_in_usd, na.rm = TRUE),
+    p25 = quantile(salary_in_usd, 0.25, na.rm = TRUE),
+    p75 = quantile(salary_in_usd, 0.75, na.rm = TRUE))
+```
+
+```{R}
+salary_df <- data.frame(
+  experience_level = rep(c("Entry", "Mid", "Senior", "Executive"), each = 2),
+  region = rep(c("US", "Offshore"), times = 4),
+  avg_salary = c(97500, 47500, 135000, 62500, 155000, 95000, 240000, 135000)
+)
+
+salary_df$experience_level <- factor(salary_df$experience_level,levels = c("Entry", "Mid", "Senior", "Executive"))
+
+ggplot(salary_df, aes(x = experience_level, y = avg_salary, fill = region)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.6), width = 0.5) +
+  scale_y_continuous(labels = comma) +
+  labs(title = "Average Salary Recommendations by Experience Level",
+       x = "Experience Level",
+       y = "Average Salary (USD)",
+       fill = "Region")
+
+ggsave("Average_Salary_Rec.png", width=8, height=5)
+```
+
+
+
+
+
+
+
+
+
